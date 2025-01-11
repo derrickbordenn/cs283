@@ -20,7 +20,7 @@ Please provide answers to these questions using markdown notation and place them
 
 3. Please provide a link to the repository you are using for this class.
 
-(https://github.com/derrickbordenn/cs283/edit/main/0-Warmup/README.md)[https://github.com/derrickbordenn/cs283/edit/main/0-Warmup/README.md]
+[https://github.com/derrickbordenn/cs283/edit/main/0-Warmup/README.md](https://github.com/derrickbordenn/cs283/edit/main/0-Warmup/README.md)
 
 4. Briefly describe what you want to get out of this class.
 
