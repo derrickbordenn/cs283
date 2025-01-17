@@ -1,200 +1,269 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include <stdbool.h>
 
 
+#define BUFFER_SZ 50 
 #define SPACE_CHAR ' '
 
+//prototypes
+void usage(char *);
+void print_buff(char *, int);
+int  setup_buff(char *, char *, int);
+
 //prototypes for functions to handle required functionality
+int  count_words(char *, int, int);
+//add additional prototypes here
+void  reverse_string(char *, int, int);
+void  word_print(char *, int, int);
 
-// TODO: #1 What is the purpose of providing prototypes for
-//          the functions in this code module
-
-//			The purpose of providing prototypes for these
-//			functions is to declare the intended return and
-//			parameter types of each function before they are 
-//			used by the compiler
-
-void  usage(char *);
-int   count_words(char *);
-void  reverse_string(char *);
-void  word_print(char *);
+int setup_buff(char *buff, char *user_str, int len){
+    
+    int char_count = 0;
+	char* source = user_str;		//source of content to be entered into buffer
+    char* destination = buff;		//destination where content will be entered
+	int space_present = 0;			//integer representation of boolean for if we see a space
+    int index = 0;
 
 
-void usage(char *exename){
-    printf("usage: %s [-h|c|r|w] \"string\" \n", exename);
-    printf("\texample: %s -w \"hello class\" \n", exename);
+	//skip over leading space characters
+    while (*source == SPACE_CHAR) {
+		source++;
+	}
+
+	//iterative over the length of the input string
+    while (*source != '\0') {
+    	if (*source != SPACE_CHAR && *source != '\t') {
+    		char_count++;
+    		*destination = *source;
+    		destination++;
+    		space_present = 0;		//indicate that we've not encountered a space
+    	} else if (!space_present) {
+    		if (char_count >= len) {
+    			return -1;
+    		}
+			*destination = SPACE_CHAR;
+			destination++;
+			char_count++;
+			space_present = 1;		//encountered a space
+		}
+    	if (*source == '0') {					 			//returns error code if input
+    		printf("Error: input cannot contain a 0\n");	//contains a 0 (optional extra error)
+    		return -2;	
+    	}
+
+    	source++;
+    	index++;
+    }
+
+	//removing the trailing space characters
+    while (char_count > 0 && *(destination - 1) == ' ') {
+        destination--;
+        char_count--;
+    }
+
+	if (char_count > len) {
+    	return -1;
+	}
+	
+	//add periods to pad the buffer to 50 characters
+	memset(buff + char_count, '.', len - char_count);
+	return char_count;
 }
 
-//count_words algorithm
-//  1.  create a boolean to indicate if you are at the start of a word
-//      initialize to false
-//  2.  Loop over the length of the string
-//      2a.  Get the current character aka str[i]
-//      2b.  Is word_start state false?
-//           -  Is the current character a SPACE_CHAR?
-//              * if YES, continue loop (a.k.a) goto top with "continue;"
-//              * if NO, we are at the start of a new word
-//                > increment wc
-//                > set word_start to true
-//      2c. Else, word_start is true
-//          - Is the current character a SPACE_CHAR?
-//            * if YES we just ended a word, set word_start to false
-//            * if NO, its just a character in the current word so
-//                     there is nothing more to do
-//  3.  The current word count for the input string is in the wc variable
-//      so just 'return wc;' 
-int count_words(char *str) {
-    int len = strlen(str);
-    int wc = 0;
-    bool word_start = false;
-	char cur;		// character at the current index
+void print_buff(char *buff, int len){
+    printf("Buffer:  ");
+    for (int i=0; i<len; i++){
+        putchar(*(buff+i));
+    }
+    putchar('\n');
+}
 
+void usage(char *exename){
+    printf("usage: %s [-h|c|r|w|x] \"string\" [other args]\n", exename);
 
-    for (int i = 0; i < len; i++) {
-		cur = str[i];
+}
+
+int count_words(char *buff, int len, int str_len){
+	int wc = 0;				//word counter
+	int word_start = 0;		//integer representation of a boolean indicating the start of a word
+	char cur;				//current character in the string
+	
+	if (str_len > len) {
+		printf("Error: Input must be less than 50 characters\n");
+		return -1;
+	}
+	
+	//iterate over the length of the string
+	for (int i = 0; i < str_len; i++) {
+		cur = *(buff + i);
 		if (!word_start) {
 			if (cur == SPACE_CHAR) {
 				continue;
 			}
+			
+			//starting a new word
 			wc++;
-			word_start = true;
+			word_start = 1;
 		} else {
+
+			//we have encounterd a space
 			if (cur == SPACE_CHAR) {
-				word_start = false;
+				word_start = 0;
 			}
 		}
-    }
-    
+	}
+
     return wc;
 }
 
-//reverse_string() algorithm
-//  1.  Initialize the start and end index variables
-//      a.  end_idx is the length of str - 1.  We want to remove one
-//          becuase at index str[len(str)] is the '\0' that we want
-//          to preserve because we are using C strings.  That makes
-//          the last real character in str as str[len(str)-1]
-//      b.  start_idx is 0, thus str[0] is the first character in the
-//          string.
-//
-//  2.  Loop while end_idx > start_idx
-//      2a. swap the characters in str[start_idx] and str[end_idx]
-//      2b. increment start_idx by 1
-//      2c. decrement end_indx by 1
-//
-//  3. When the loop above terminates, the string should be reversed in place
-void  reverse_string(char *str){
-    int end_idx = strlen(str) - 1;        //should be length of string - 1
-    int start_idx = 0;
-    char tmp_char;
+void reverse_string(char *buff, int len, int str_len) {
+	int end_idx = str_len - 1;	//end index of the string
+	int start_idx = 0;			//start index of the string
+	char tmp_char;				//temporary character for swapping
 
-		while (end_idx > start_idx) {
-			tmp_char = str[start_idx];
-			str[start_idx] = str[end_idx];
-			str[end_idx] = tmp_char;
-			start_idx++;
-			end_idx--;
-		}
-
-    return;
-}
-
-//word_print() - algorithm
-//
-// Start by copying the code from count words.  Recall that that code counts
-// individual words by incrementing wc when it encounters the first character 
-// in a word.
-// Now, at this point where we are incrementing wc we need to do a few more things
-//      1. incrment wc, and set word_start to true like before
-//      2. Now, set wlen to zero, as we will be counting characters in each word
-//      3. Since we are starting a new word we can printf("%d. ", wc);
-//
-// If word_start is true, we are in an active word, so each time through the loop
-// we would want to:
-//      1. Check if the current character is not a SPACE_CHARACTER
-//         a.  IF it is NOT A SPACE -> print the current character, increment wlen
-//
-//      2.  In the loop there are 2 conditions that indicate a current word is ending:
-//          a. word_start is false and the current character is a SPACE_CHARACTER
-//                  OR
-//          b. the current loop index is the last character in the string (aka the
-//             loop index is last_char_idx) 
-//
-//          IF either of these conditions are true:
-//              * Print the word length for current word - printf(" (%d)\n", wlen);
-//              * Set word_start to false
-//              * Set wlen to 0 given we are starting a new word
-//
-// EXAMPLE OUTPUT
-// ==============
-// ./stringfun -w "C programming is fun"
-// Word Print
-// ----------
-// 1. C (1)
-// 2. programming (11)
-// 3. is (2)
-// 4. fun (3)
-void  word_print(char *str){
-    //suggested local variables
-    int len = strlen(str);            //length of string - aka strlen(str);
-    int last_char_idx = strlen(str) - 1;  //index of last char - strlen(str)-1;
-    int wc = 0;         //counts words
-    int wlen = 0;       //length of current word
-    bool word_start = false;    //am I at the start of a new word
-	char cur;		// character at the current index
+	if (str_len > len) {
+		printf("Error: Input must be less than 50 characters\n");
+		return;
+	}
 	
-	for (int i = 0; i < len; i++) {
-    	cur = str[i];   
-        if (!word_start) {
-            if (cur == SPACE_CHAR) {
-        		continue;
-        	}
-        	wc++;
-        	word_start = true;
-        	printf("%d. ", wc);
-        	printf("%c", cur);
-        	wlen++;
-        } else {
-            if (cur == SPACE_CHAR) {
-				printf(" (%d)\n", wlen);                
-                wlen = 0;
-                word_start = false;
-            } else {
-            	printf("%c", cur);
-            	wlen++;
-        	}
-        }
-        if (i == last_char_idx) {
-        	printf(" (%d)\n", wlen);
-        	word_start = false;
-        	wlen = 0;
-    	}
-    }
+	//swap the ending and start characters and pinch until we meet in the middle of the string
+	while (end_idx > start_idx) {
+		tmp_char = *(buff + start_idx);
+		*(buff + start_idx) = *(buff + end_idx);
+		*(buff + end_idx) = tmp_char;
+		start_idx++;
+		end_idx--;
+	}
+	return;
 }
 
+void word_print(char *buff, int len, int str_len) {
+	int wc = 0;							//word counter
+	int word_start = 0;					//indicating the start of a word
+	int last_char_idx = str_len - 1;	//index of the last character in the input string
+	int wlen = 0;						//length of the current word
+	char cur;							//current element in the string
 
+	
+	if (str_len > len) {
+        printf("Error: Input must be less than 50 characters\n");
+    	return;
+    }
+	
+	//iterate over the length of the string
+	for (int i = 0; i < str_len; i++) {
+		cur = *(buff + i);				//set the current element to the ith index of the buffer
+		if (!word_start) {
+			if (cur == SPACE_CHAR) {	
+				continue;
+			}
+			wc++;
+			word_start = 1;
+			printf("%d. ", wc);			//print the number of the word
+			printf("%c", cur);			//print the current letter of the word
+			wlen++;
+		} else {
+			if (cur == SPACE_CHAR) {
+				printf(" (%d)\n", wlen);//print the length of the word
+				wlen = 0;
+				word_start = 0;
+			} else {
+				printf("%c", cur);
+				wlen++;
+			}
+		}
+		if (i == last_char_idx) {		//print the length of the last word
+			printf(" (%d)\n", wlen);
+			word_start = 0;
+			wlen = 0;
+		}
+	}
+	printf("\nNumber of words returned: %d\n", wc);
+}
+
+void replace_word(char* buff, int len, int str_len, char* target, char* new) {
+	int target_len = 0;							//length of the target word
+	int new_len = 0;							//length of the new word to replace the target
+	if (str_len > len) {
+		printf("Error: Input must be less than 50 characters\n");
+	}
+
+	//count the length of the target word
+	while (*(target + target_len) != '\0') {
+		target_len++;
+	}
+    
+    //count the length of the replacement word
+    while (*(new + new_len) != '\0') {
+    	new_len++;
+    }
+	
+	//iterate until we are at a point where the target word would be too long to be found
+    for (int i = 0; i < str_len - target_len; i++) {
+        int j = 0;		//create a new variable to test if we've matched the entire target
+        while (j < target_len && *(buff + i + j) == *(target + j)) {
+        	j++;
+        }
+
+        //check if the target word appears by itself in the stribg
+        if (j == target_len && *(buff + i + j) == SPACE_CHAR|| *(buff + i + j) == '\0') {
+			int difference = new_len - target_len;						//calculate the difference of new and target
+			int max_replacement_len = len - str_len - target_len;		//calcaulte the max length of new word
+			if (new_len > max_replacement_len) {
+				printf("Error: Replacement word must be at most %d characters long", max_replacement_len);
+        	}
+
+        	//make space for the larger new word replacing the target
+			if (difference > 0) {
+				for (int k = str_len; k >= i + target_len; k--) {
+					*(buff + k + difference) = *(buff + k);
+				}
+
+			//reduce space for the smaller word replacing 
+			} else if (difference < 0) {
+				for (int k = i + target_len; k <=str_len; k++) {
+					*(buff + k + difference) = *(buff + k);
+				}
+			}
+
+			//replace the target with the new word
+			for (int k = 0; k < new_len; k++) {
+				*(buff + i + k) = *(new + k);
+			}
+			
+			printf("Modified String: ");
+			for (int k = 0; k < str_len + difference; k++) {
+				printf("%c", *(buff + k));
+			}
+			printf("\n");
+			return;
+		}
+	}
+	printf("You did not enter a word that was in the string.\n");
+	return;
+}
+
+			
+		
 int main(int argc, char *argv[]){
+
+    char *buff;             //placehoder for the internal buffer
     char *input_string;     //holds the string provided by the user on cmd line
-    char *opt_string;       //holds the option string in argv[1]
     char opt;               //used to capture user option from cmd line
+    int  rc;                //used for return codes
+    int  user_str_len;      //length of user supplied string
 
-    //THIS BLOCK OF CODE HANDLES PROCESSING COMMAND LINE ARGS
-    if (argc < 2){
+    //TODO:  #1. WHY IS THIS SAFE, aka what if arv[1] does not exist?
+
+    //		 It's safe because the first condition of the or statement
+    //		 is the edge case for argv[1] not exisiting.
+    if ((argc < 2) || (*argv[1] != '-')){
         usage(argv[0]);
         exit(1);
     }
-    opt_string = argv[1];
 
-    //note arv[2] should be -h -r -w or -c, thus the option is
-    //the second character and a - is the first char
-    if((opt_string[0] != '-') && (strlen(opt_string) != 2)){
-        usage(argv[0]);
-        exit(1);
-    }
-
-    opt = opt_string[1];   //get the option flag
+    opt = (char)*(argv[1]+1);   //get the option flag
 
     //handle the help flag and then exit normally
     if (opt == 'h'){
@@ -202,61 +271,89 @@ int main(int argc, char *argv[]){
         exit(0);
     }
 
-    //Finally the input string must be in argv[2]
-    if (argc != 3){
+     			
+	//			The purpose of the if statement below is to handle
+    //			any case where the user doesn't include enough
+    //			commands, hence why it will execute if there are
+    //			less than three input arguments. Without all three
+    //			input arguments, the program does not have enough 
+    //			information to run
+
+    if (argc < 3){
         usage(argv[0]);
         exit(1);
     }
 
-    input_string = argv[2];
-    //ALL ARGS PROCESSED - The string you are working with is
-    //is the third arg or in arv[2]
+    input_string = argv[2]; //capture the user input string
+
+    //TODO:  #3 Allocate space for the buffer using malloc and
+    //          handle error if malloc fails by exiting with a 
+    //          return code of 99
     
+	buff = malloc(BUFFER_SZ);
+	
+	if (buff == NULL) {
+		printf("Error : Memory allocation failure\n");
+		exit(99);
+	}
+
+    user_str_len = setup_buff(buff, input_string, BUFFER_SZ);     //see todos
+    if (user_str_len < 0){
+        printf("Error setting up buffer, error = %d", user_str_len);
+        free(buff);
+        exit(2);
+    }
+
     switch (opt){
         case 'c':
-            int wc = 0;         //variable for the word count
+            rc = count_words(buff, BUFFER_SZ, user_str_len);
+            if (rc < 0){
+                printf("Error counting words, rc = %d", rc);
+                exit(2);
+            }
 
-            //TODO: #2. Call count_words, return of the result
-            //          should go into the wc variable
-     		wc = count_words(input_string);       
-            printf("Word Count: %d\n", wc);
+			printf("Word Count: %d\n", rc);
             break;
-        case 'r':
-            //TODO: #3. Call reverse string using input_string
-            //          input string should be reversed
-            reverse_string(input_string);
-            printf("Reversed string: %s\n", input_string);
 
-            //TODO:  #4.  The algorithm provided in the directions 
-            //            state we simply return after swapping all 
-            //            characters because the string is reversed 
-            //            in place.  Briefly explain why the string 
-            //            is reversed in place - place in a comment
-            
-			//			  The string is reversed in place because 
-			//			  it avoids using additional memory to store
-			//			  a new copy of the reversed string.
-            break;
-        case 'w':
-            printf("Word Print\n----------\n");
-
-            //TODO: #5. Call word_print, output should be
-            //          printed by that function
-            word_print(input_string);
-            break;
-		// The purpose of this default is to handle an invalid input
-        // that does not take one of the four options (-h, -c, -r, or
-        // -w).
-        default:
+		default:
             usage(argv[0]);
-            printf("Invalid option %c provided, exiting!\n", opt);
             exit(1);
-    }
-    //TODO: #7. Why did we place a break statement on each case
-    //          option, and did not place one on default.  What
-    //          would happen if we forgot the break statement?
+    	
+    	case 'r':
+    		reverse_string(buff, BUFFER_SZ, user_str_len);
+			printf("Reversed String: ");
+            for (int i = 0; i < user_str_len; i++) {
+                printf("%c", *(buff + i));
+            }
+            printf("\n");
+			break;    
 
-	//			The break statement ends each case because we
-	//			only intend to run the program once. If we forgot
-	//			the break statement, the program would keep running.
+		case 'w':
+			printf("Word Print\n----------\n");
+			word_print(input_string, BUFFER_SZ, user_str_len);
+            break;
+
+		case 'x':
+			replace_word(buff, BUFFER_SZ, user_str_len, argv[3], argv[4]);
+			break;
+
+    }
+
+    print_buff(buff,BUFFER_SZ);
+    free(buff);
+    exit(0);
 }
+
+//			Notice all of the helper functions provided in the 
+//          starter take both the buffer as well as the length.  Why
+//          do you think providing both the pointer and the length
+//          is a good practice, after all we know from main() that 
+//          the buff variable will have exactly 50 bytes?
+//
+//  		It's important to use both to ensure that the buffer will
+//			not overflow, and it would help in some case where we 
+//			change the buffer size from 50 to something else. It also
+//			important to include both the pointer and its length to
+//			avoid any hidden assumptions, and it also aligns with other
+//			system calls and library functions as they have similar
+//			arguments.
