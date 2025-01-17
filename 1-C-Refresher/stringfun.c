@@ -31,7 +31,7 @@ int setup_buff(char *buff, char *user_str, int len){
 		source++;
 	}
 
-	//iterative over the length of the input string
+	//iterate over the length of the input string
     while (*source != '\0') {
     	if (*source != SPACE_CHAR && *source != '\t') {
     		char_count++;
