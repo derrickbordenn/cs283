@@ -217,15 +217,12 @@ int start_client(char *server_ip, int port) {
  *
  */
 int client_cleanup(int cli_socket, char *cmd_buff, char *rsp_buff, int rc) {
-    //If a valid socket number close it.
     if (cli_socket > 0) {
         close(cli_socket);
     }
 
-    //Free up the buffers
     free(cmd_buff);
     free(rsp_buff);
 
-    //Echo the return value that was passed as a parameter
     return rc;
 }

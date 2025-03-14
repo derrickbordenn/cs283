@@ -13,7 +13,7 @@
 #include "rshlib.h"
 
 int start_server(char *ifaces, int port, int is_threaded) {
-    (void)is_threaded; // Suppress unused parameter warning
+    (void)is_threaded; // I don't use this parameter 
     int svr_socket;
     int rc;
 
@@ -257,9 +257,6 @@ Built_In_Cmds rsh_built_in_cmd(cmd_buff_t *cmd) {
     ctype = rsh_match_command(cmd->argv[0]);
 
     switch (ctype) {
-        // case BI_CMD_DRAGON:
-        //    print_dragon();
-        //    return BI_EXECUTED;
         case BI_CMD_EXIT:
             return BI_CMD_EXIT;
         case BI_CMD_STOP_SVR:
